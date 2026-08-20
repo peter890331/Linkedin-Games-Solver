@@ -1,6 +1,6 @@
 # LinkedIn Games Solver
 
-A cool expansion from ronnielgandhe.    
+A cool extension from ronnielgandhe.    
 https://github.com/ronnielgandhe/linkedin-games-solver
 
 ---
