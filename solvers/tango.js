@@ -12,22 +12,20 @@ void (async () => {
 
   async function waitForBoard() {
     for (let i = 0; i < 50; i++) {
-      // Look for gameboard with enough cells
-      const board = document.querySelector('[aria-label="Gameboard"]');
+      const board = document.querySelector('[aria-label="Gameboard"], [aria-label*="Game"]') || document.querySelector('[data-testid="tango-gameboard-wrapper"]') || document;
       if (board) {
         const cells = [...board.querySelectorAll('[data-testid^="cell-"]')]
           .filter(el => /^cell-\d+$/.test(el.getAttribute('data-testid')));
         if (cells.length >= 16) return true;
       }
-      // No gameboard after 500ms = not a game frame, bail out
       if (i >= 5 && !board) return false;
       for (const btn of document.querySelectorAll('button')) {
         const text = btn.textContent.trim().toLowerCase();
-        if (text === 'play' || text === 'start') click(btn);
-        if (btn.getAttribute('aria-label') === 'Close') click(btn);
+        if (['play', 'start', 'play now', 'play again', 'continue', 'got it', 'ok', "let's go", '開始', '遊玩', '繼續'].includes(text)) click(btn);
+        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss' || btn.getAttribute('aria-label') === '關閉') click(btn);
       }
-      for (const d of document.querySelectorAll('[role="dialog"]')) {
-        const close = d.querySelector('button');
+      for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+        const close = d.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="關閉"], button');
         if (close) click(close);
       }
       await sleep(100);
@@ -37,19 +35,16 @@ void (async () => {
 
   try {
     if (!(await waitForBoard())) {
-      if (document.querySelectorAll('*').length > 100) {
-        window.__linkedinSolverResult = { error: 'Could not find Tango board' };
-      }
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    const board = document.querySelector('[aria-label="Gameboard"]');
+    const board = document.querySelector('[aria-label="Gameboard"], [aria-label*="Game"]') || document.querySelector('[data-testid="tango-gameboard-wrapper"]') || document;
     if (!board) {
-      window.__linkedinSolverResult = { error: 'No Gameboard element' };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Get ONLY actual cell elements (cell-0, cell-1, ...) — skip cell-zero, cell-one etc.
     const cellEls = [...board.querySelectorAll('[data-testid^="cell-"]')]
       .filter(el => /^cell-\d+$/.test(el.getAttribute('data-testid')))
       .sort((a, b) => {
@@ -60,20 +55,25 @@ void (async () => {
 
     const SIZE = Math.round(Math.sqrt(cellEls.length));
     if (SIZE * SIZE !== cellEls.length) {
-      window.__linkedinSolverResult = { error: `Tango: grid not square (${cellEls.length} cells)` };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Read grid: -1 = empty, 0 = sun, 1 = moon
     const grid = [];
     const prefilled = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
-      const svg = cellEls[i].querySelector('svg[aria-label]');
-      const label = svg ? svg.getAttribute('aria-label') : '';
-      if (label === 'Sun') {
+      const svg = cellEls[i].querySelector('svg');
+      const label = svg ? (svg.getAttribute('aria-label') || '') : '';
+      const hasSunShape = !!cellEls[i].querySelector('path#Sun, g#Sun');
+      const hasMoonShape = !!cellEls[i].querySelector('path#Moon, g#Moon');
+
+      const isSun = hasSunShape || /sun|太陽|sol|soleil|sonne|zon|aurinko|güneş/i.test(label);
+      const isMoon = hasMoonShape || /moon|月亮|luna|lune|mond|maan|kuu|ay/i.test(label);
+
+      if (isSun) {
         grid.push(SUN);
         prefilled.push(true);
-      } else if (label === 'Moon') {
+      } else if (isMoon) {
         grid.push(MOON);
         prefilled.push(true);
       } else {
@@ -83,13 +83,12 @@ void (async () => {
     }
 
     if (grid.every(v => v !== -1)) {
-      window.__linkedinSolverResult = { success: true, message: 'Tango is already solved!' };
+      window.__linkedinSolverResult = { success: true, message: 'Tango solved!' };
       return;
     }
 
     function idx(r, c) { return r * SIZE + c; }
 
-    // Parse edge constraints — handle both nested and sibling edge elements
     const constraints = [];
     const seen = new Set();
     const edgeEls = board.querySelectorAll('[data-testid="edge-equal"], [data-testid="edge-cross"]');
@@ -99,7 +98,6 @@ void (async () => {
       const cellEl = e.closest('[data-testid^="cell-"]');
 
       if (cellEl) {
-        // Edge is nested inside a cell — use position offset to find neighbor
         const cellIdx = parseInt(cellEl.getAttribute('data-testid').replace('cell-', ''));
         const cellRow = Math.floor(cellIdx / SIZE);
         const cellCol = cellIdx % SIZE;
@@ -124,7 +122,6 @@ void (async () => {
           }
         }
       } else {
-        // Edge is a sibling — find two closest cells by position
         const edgeRect = e.getBoundingClientRect();
         const ecx = edgeRect.left + edgeRect.width / 2;
         const ecy = edgeRect.top + edgeRect.height / 2;
@@ -144,7 +141,6 @@ void (async () => {
       }
     }
 
-    // Solver
     const half = SIZE / 2;
 
     function isValidPartial(g) {
@@ -202,20 +198,16 @@ void (async () => {
 
     const solution = [...grid];
     if (!solve(solution)) {
-      window.__linkedinSolverResult = { error: `No Tango solution (${SIZE}x${SIZE}, ${constraints.length} constraints)` };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Enter solution: click cycle is Empty -> Sun -> Moon -> Empty
-    // 1 click = Sun, 2 clicks = Moon
     const toFill = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
       if (!prefilled[i]) toFill.push(i);
     }
 
-    // Set success BEFORE filling so the result is available even if the game
-    // triggers a completion overlay/navigation after the last cell is filled.
-    window.__linkedinSolverResult = { success: true, message: `Tango solved! Filled ${toFill.length} cells.` };
+    window.__linkedinSolverResult = { success: true, message: 'Tango solved!' };
 
     for (const i of toFill) {
       const target = solution[i];
@@ -227,6 +219,6 @@ void (async () => {
       }
     }
   } catch (err) {
-    window.__linkedinSolverResult = { error: 'Tango error: ' + err.message };
+    window.__linkedinSolverResult = { error: 'Error!' };
   }
 })();

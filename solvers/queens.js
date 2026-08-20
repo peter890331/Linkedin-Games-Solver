@@ -11,20 +11,20 @@ void (async () => {
 
   async function waitForBoard() {
     for (let i = 0; i < 50; i++) {
-      const closeBtn = document.querySelector('[aria-label="Close"]');
+      const closeBtn = document.querySelector('[aria-label="Close"], [aria-label="關閉"]');
       if (closeBtn) click(closeBtn);
 
-      const section = document.querySelector('[aria-label="Press enter to gameboard"]');
+      const section = document.querySelector('[aria-label="Press enter to gameboard"], [aria-label*="Enter"]') || document;
       if (section) {
-        for (const div of section.querySelectorAll('div')) {
-          if (div.children.length >= 25) return true;
+        for (const div of section.querySelectorAll('div, section')) {
+          const len = div.children.length;
+          if (len >= 25 && len <= 144 && Number.isInteger(Math.sqrt(len))) return true;
         }
       }
-      // No gameboard section after 500ms = not a game frame, bail out
       if (i >= 5 && !section) return false;
       for (const btn of document.querySelectorAll('button')) {
         const text = btn.textContent.trim().toLowerCase();
-        if (text === 'play' || text === 'start') click(btn);
+        if (text === 'play' || text === 'start' || text === '開始' || text === '遊玩') click(btn);
       }
       await sleep(100);
     }
@@ -33,52 +33,59 @@ void (async () => {
 
   try {
     if (!(await waitForBoard())) {
-      if (document.querySelectorAll('*').length > 100) {
-        window.__linkedinSolverResult = { error: 'Could not find Queens board' };
-      }
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Close any tutorial dialogs
     await sleep(300);
     for (const d of document.querySelectorAll('[role="dialog"]')) {
       const close = d.querySelector('button');
       if (close) click(close);
     }
     for (const btn of document.querySelectorAll('button')) {
-      if (btn.textContent.trim() === '\u00d7' || btn.getAttribute('aria-label') === 'Close') {
+      if (btn.textContent.trim() === '\u00d7' || btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === '關閉') {
         click(btn);
       }
     }
     await sleep(500);
 
-    const section = document.querySelector('[aria-label="Press enter to gameboard"]');
+    const section = document.querySelector('[aria-label="Press enter to gameboard"], [aria-label*="Enter"]') || document;
     let gridContainer = null;
-    for (const div of section.querySelectorAll('div')) {
-      if (div.children.length >= 25) { gridContainer = div; break; }
+    for (const div of section.querySelectorAll('div, section')) {
+      const len = div.children.length;
+      if (len >= 25 && len <= 144 && Number.isInteger(Math.sqrt(len))) { gridContainer = div; break; }
+    }
+
+    if (!gridContainer) {
+      window.__linkedinSolverResult = { error: 'Error!' };
+      return;
     }
 
     const cellEls = [...gridContainer.children];
     const SIZE = Math.round(Math.sqrt(cellEls.length));
 
-    // Read grid: parse aria-labels for color and queen state
     const cells = cellEls.map((el, i) => {
       const ariaLabel = el.getAttribute('aria-label') || '';
-      const colorMatch = ariaLabel.match(/color ([^,]+)/);
-      const hasQueen = ariaLabel.toLowerCase().includes('queen');
+      const hasQueen = /queen|皇后|王后|reine|reina|königin|regina|rainha|koningin|królowa|kraliçe|vezir|королева|ферзь|ratu|クイーン|퀸|ملكة|रानी|drottning|dronning|kuningatar|královna|regină/i.test(ariaLabel);
+      
+      let bgColor = window.getComputedStyle(el).backgroundColor;
+      if (!bgColor || bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
+        const child = el.firstElementChild;
+        if (child) bgColor = window.getComputedStyle(child).backgroundColor;
+      }
+
       return {
         row: Math.floor(i / SIZE),
         col: i % SIZE,
-        color: colorMatch ? colorMatch[1].trim() : 'unknown',
+        color: bgColor || 'unknown',
         hasQueen,
         el,
       };
     });
 
-    // Check if already solved
     const queenCount = cells.filter(c => c.hasQueen).length;
     if (queenCount === SIZE) {
-      window.__linkedinSolverResult = { success: true, message: 'Queens is already solved!' };
+      window.__linkedinSolverResult = { success: true, message: 'Queens solved!' };
       return;
     }
 
@@ -127,12 +134,10 @@ void (async () => {
 
     const solution = solve();
     if (!solution) {
-      window.__linkedinSolverResult = { error: `No solution found (${SIZE}x${SIZE}, ${colors.length} colors)` };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Enter solution: click cycle is Empty -> X -> Queen -> Empty
-    // So 2 clicks for queen on empty cell
     const toPlace = [];
     for (let row = 0; row < SIZE; row++) {
       const col = solution[row];
@@ -140,9 +145,7 @@ void (async () => {
       if (!cell.hasQueen) toPlace.push(cell);
     }
 
-    // Set success BEFORE filling so the result is available even if the game
-    // triggers a completion overlay/navigation after the last cell is placed.
-    window.__linkedinSolverResult = { success: true, message: `Queens solved! Placed ${toPlace.length} queens.` };
+    window.__linkedinSolverResult = { success: true, message: 'Queens solved!' };
 
     for (const cell of toPlace) {
       click(cell.el);
@@ -151,6 +154,6 @@ void (async () => {
       await sleep(DELAY);
     }
   } catch (err) {
-    window.__linkedinSolverResult = { error: 'Queens error: ' + err.message };
+    window.__linkedinSolverResult = { error: 'Error!' };
   }
 })();

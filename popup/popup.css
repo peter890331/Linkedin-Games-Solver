@@ -15,7 +15,6 @@ body {
   padding: 0;
 }
 
-/* Header */
 .header {
   background: #fff;
   padding: 20px 20px 16px;
@@ -51,7 +50,6 @@ body {
   font-weight: 400;
 }
 
-/* Games list */
 .games {
   padding: 8px 12px;
   display: flex;
@@ -139,7 +137,6 @@ body {
   color: #0a66c2;
 }
 
-/* Status bar */
 .status {
   display: flex;
   align-items: flex-start;
@@ -181,7 +178,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .status.solving .status-icon {
@@ -192,7 +191,6 @@ body {
   word-break: break-word;
 }
 
-/* Footer */
 .footer {
   display: flex;
   align-items: center;

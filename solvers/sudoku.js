@@ -17,15 +17,14 @@ void (async () => {
       let cells = document.querySelectorAll('.sudoku-cell[data-cell-idx]');
       if (cells.length === 0) cells = document.querySelectorAll('[data-cell-idx]');
       if (cells.length === SIZE * SIZE) return true;
-      // No sudoku cells after 500ms = not a game frame, bail out
       if (i >= 5 && cells.length === 0 && !document.querySelector('.sudoku-cell')) return false;
       for (const btn of document.querySelectorAll('button')) {
         const text = btn.textContent.trim().toLowerCase();
-        if (['play', 'start', 'play now', 'play again', 'continue', 'got it', 'ok', 'let\'s go'].includes(text)) click(btn);
-        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss') click(btn);
+        if (['play', 'start', 'play now', 'play again', 'continue', 'got it', 'ok', "let's go", '開始', '遊玩', '繼續'].includes(text)) click(btn);
+        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss' || btn.getAttribute('aria-label') === '關閉') click(btn);
       }
       for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
-        const close = d.querySelector('button');
+        const close = d.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="關閉"], button');
         if (close) click(close);
       }
       await sleep(100);
@@ -35,13 +34,10 @@ void (async () => {
 
   try {
     if (!(await waitForBoard())) {
-      if (document.querySelectorAll('*').length > 100) {
-        window.__linkedinSolverResult = { error: 'Could not find Sudoku board' };
-      }
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Find cells: prefer .sudoku-cell, fallback to [data-cell-idx]
     let cells = document.querySelectorAll('.sudoku-cell[data-cell-idx]');
     if (cells.length === 0) cells = document.querySelectorAll('[data-cell-idx]');
 
@@ -52,7 +48,6 @@ void (async () => {
       const idx = parseInt(el.dataset.cellIdx);
       const row = Math.floor(idx / SIZE);
       const col = idx % SIZE;
-      // Try .sudoku-cell-content first, then data-cell-content, then textContent
       let val = 0;
       const content = el.querySelector('.sudoku-cell-content') || el.querySelector('[data-cell-content]');
       if (content) {
@@ -66,10 +61,9 @@ void (async () => {
       }
     });
 
-    // Check if already solved
     const emptyCount = grid.flat().filter(v => v === 0).length;
     if (emptyCount === 0) {
-      window.__linkedinSolverResult = { success: true, message: 'Sudoku is already solved!' };
+      window.__linkedinSolverResult = { success: true, message: 'Mini Sudoku solved!' };
       return;
     }
 
@@ -102,11 +96,10 @@ void (async () => {
 
     const solution = grid.map(r => [...r]);
     if (!solve(solution)) {
-      window.__linkedinSolverResult = { error: 'No solution found for this Sudoku' };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    // Find number input buttons: prefer .sudoku-input-button, fallback to buttons by text
     function getNumBtn(n) {
       const byClass = document.querySelector(`.sudoku-input-button:nth-child(${n})`);
       if (byClass) {
@@ -114,7 +107,6 @@ void (async () => {
           if (btn.textContent.trim() === String(n)) return btn;
         }
       }
-      // Fallback: find any button with exact number text
       for (const btn of document.querySelectorAll('button')) {
         if (btn.textContent.trim() === String(n)) return btn;
       }
@@ -139,8 +131,8 @@ void (async () => {
       }
     }
 
-    window.__linkedinSolverResult = { success: true, message: `Sudoku solved! Filled ${filled} cells.` };
+    window.__linkedinSolverResult = { success: true, message: 'Mini Sudoku solved!' };
   } catch (err) {
-    window.__linkedinSolverResult = { error: 'Sudoku error: ' + err.message };
+    window.__linkedinSolverResult = { error: 'Error!' };
   }
 })();

@@ -17,10 +17,10 @@ void (async () => {
       for (const btn of document.querySelectorAll('button')) {
         const t = btn.textContent.trim().toLowerCase();
         if (['play', 'start', 'play now', 'play again', 'continue', 'got it', 'ok', "let's go"].includes(t)) click(btn);
-        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss') click(btn);
+        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss' || btn.getAttribute('aria-label') === '關閉') click(btn);
       }
       for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
-        const close = d.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button');
+        const close = d.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="關閉"], button');
         if (close) click(close);
       }
       await sleep(100);
@@ -30,20 +30,16 @@ void (async () => {
 
   try {
     if (!(await waitForBoard())) {
-      if (document.querySelectorAll('*').length > 100) {
-        window.__linkedinSolverResult = { error: 'Could not find Patches board' };
-      }
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
-    const t0 = performance.now();
     const cellEls = [...document.querySelectorAll('[data-cell-idx]')]
       .sort((a, b) => parseInt(a.dataset.cellIdx) - parseInt(b.dataset.cellIdx));
 
-    // --- 1. Extract solution from React fiber ---
     const fiberKey = Object.keys(cellEls[0]).find(k => k.startsWith('__reactFiber'));
     if (!fiberKey) {
-      window.__linkedinSolverResult = { error: 'Patches: no React fiber found' };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
@@ -62,14 +58,12 @@ void (async () => {
     }
 
     if (!solution || !Array.isArray(solution) || solution.length === 0) {
-      window.__linkedinSolverResult = { error: 'Patches: could not read solution from game state' };
+      window.__linkedinSolverResult = { error: 'Error!' };
       return;
     }
 
     const COLS = gridCols || Math.round(Math.sqrt(cellEls.length));
 
-    // --- 2. Convert solution regions to drag coordinates ---
-    // Each region is rectangular. Drag from top-left cell center to bottom-right cell center.
     const drags = [];
     for (const region of solution) {
       const cellIdxes = region.cellIdxes;
@@ -90,16 +84,14 @@ void (async () => {
       });
     }
 
-    const t1 = performance.now();
-
     window.__linkedinSolverResult = {
       success: true,
       needsCDP: true,
       cdpType: 'drag',
       drags,
-      message: `Patches solved! ${solution.length} regions (${Math.round(t1 - t0)}ms)`,
+      message: 'Patches solved!',
     };
   } catch (err) {
-    window.__linkedinSolverResult = { error: 'Patches: ' + err.message };
+    window.__linkedinSolverResult = { error: 'Error!' };
   }
 })();

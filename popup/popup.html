@@ -13,56 +13,65 @@
         <img src="../icons/logo.png" alt="Logo">
       </div>
       <div class="header-text">
-        <h1>Game Solver</h1>
-        <p class="subtitle">Pick a game to auto-solve</p>
+        <h1>LinkedIn Game Solver</h1>
+        <p class="subtitle">Pick a game to auto-solve !</p>
       </div>
     </div>
 
     <div class="games">
       <button class="game-card" data-game="sudoku">
-        <div class="game-icon"><img src="../icons/sudoku.png" alt="Sudoku"></div>
+        <div class="game-icon">
+          <img src="../icons/sudoku.png" alt="Sudoku">
+        </div>
         <div class="game-info">
           <span class="game-name">Mini Sudoku</span>
-          <span class="game-desc">6x6 number grid</span>
         </div>
         <div class="game-arrow">&#8250;</div>
       </button>
 
       <button class="game-card" data-game="tango">
-        <div class="game-icon"><img src="../icons/tango.png" alt="Tango"></div>
+        <div class="game-icon">
+          <img src="../icons/tango.png" alt="Tango">
+        </div>
         <div class="game-info">
           <span class="game-name">Tango</span>
-          <span class="game-desc">Suns & moons puzzle</span>
         </div>
         <div class="game-arrow">&#8250;</div>
       </button>
 
       <button class="game-card" data-game="queens">
-        <div class="game-icon"><img src="../icons/queens.png" alt="Queens"></div>
+        <div class="game-icon">
+          <img src="../icons/queens.png" alt="Queens">
+        </div>
         <div class="game-info">
           <span class="game-name">Queens</span>
-          <span class="game-desc">Place the queens</span>
         </div>
         <div class="game-arrow">&#8250;</div>
       </button>
 
       <button class="game-card" data-game="zip">
-        <div class="game-icon"><img src="../icons/zip.png" alt="Zip"></div>
+        <div class="game-icon">
+          <img src="../icons/zip.png" alt="Zip">
+        </div>
         <div class="game-info">
           <span class="game-name">Zip</span>
-          <span class="game-desc">Connect the path</span>
         </div>
         <div class="game-arrow">&#8250;</div>
       </button>
 
       <button class="game-card" data-game="patches">
-        <div class="game-icon"><img src="../icons/patches.png" alt="Patches"></div>
+        <div class="game-icon">
+          <img src="../icons/patches.png" alt="Patches">
+        </div>
         <div class="game-info">
           <span class="game-name">Patches</span>
-          <span class="game-desc">Fill the grid with shapes</span>
         </div>
         <div class="game-arrow">&#8250;</div>
       </button>
+    </div>
+
+    <div class="actions">
+      <button id="solve-all-btn" class="game-card" style="grid-column: 1 / -1; width: calc(100% - 20px); margin: 0 10px 10px 10px;">🤓☝️ Solve All Games in one tap !</button>
     </div>
 
     <div id="status" class="status hidden">
@@ -71,10 +80,8 @@
     </div>
 
     <div class="footer">
-      <button id="debug-btn">Diagnostics</button>
-      <span>v1.5</span>
+      <span>From ronnielgandhe/linkedin-games-solver.</span>
     </div>
-  </div>
 
   <script src="popup.js"></script>
 </body>
