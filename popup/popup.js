@@ -57,7 +57,8 @@ async function pollForResult(tabId, maxAttempts, intervalMs) {
 }
 
 async function solveGame(game) {
-  setStatus('solving', `Opening ${game}...`);
+  const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
+  setStatus('solving', `Opening ${capitalizedGame}...`);
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -71,7 +72,7 @@ async function solveGame(game) {
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    setStatus('solving', `Solving ${game}...`);
+    setStatus('solving', `Solving ${capitalizedGame}...`);
 
     try {
       await chrome.scripting.executeScript({
@@ -93,12 +94,12 @@ async function solveGame(game) {
       return { error: 'Error!' };
     }
 
-    setStatus('solving', `Waiting for ${game}...`);
+    setStatus('solving', `Waiting for ${capitalizedGame}...`);
 
     const result = await pollForResult(tab.id, 200, 100);
 
     if (result && result.needsCDP && result.cellIndices) {
-      setStatus('solving', `Executing ${game}...`);
+      setStatus('solving', `Executing ${capitalizedGame}...`);
       try {
         const cdpResult = await chrome.runtime.sendMessage({
           type: 'ZIP_SOLVE',
@@ -112,7 +113,7 @@ async function solveGame(game) {
         return { error: 'Error!' };
       }
     } else if (result && result.needsCDP && result.drags) {
-      setStatus('solving', `Executing ${game}...`);
+      setStatus('solving', `Executing ${capitalizedGame}...`);
       try {
         const cdpResult = await chrome.runtime.sendMessage({
           type: 'PATCHES_SOLVE',
@@ -142,11 +143,12 @@ document.querySelectorAll('.game-card').forEach(btn => {
   btn.addEventListener('click', async () => {
     disableButtons(true);
     const game = btn.dataset.game;
+    const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
     const res = await solveGame(game);
     if (res && res.error) {
       setStatus('error', 'Error!');
     } else {
-      setStatus('success', `${game} solved!`);
+      setStatus('success', `${capitalizedGame} solved!`);
     }
     disableButtons(false);
   });
@@ -157,7 +159,8 @@ document.getElementById('solve-all-btn').addEventListener('click', async () => {
   const games = ['sudoku', 'tango', 'queens', 'zip', 'patches'];
   
   for (const game of games) {
-    setStatus('solving', `Processing ${game}...`);
+    const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
+    setStatus('solving', `Processing ${capitalizedGame}...`);
     const res = await solveGame(game);
     if (res && res.error) {
       setStatus('error', 'Error!');
@@ -179,11 +182,12 @@ document.getElementById('solve-all-btn').addEventListener('click', async () => {
       const slug = url.replace('https://www.linkedin.com', '');
       if (tab.url.includes(slug)) {
         disableButtons(true);
+        const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
         const res = await solveGame(game);
         if (res && res.error) {
           setStatus('error', 'Error!');
         } else {
-          setStatus('success', res?.message || `${game} solved!`);
+          setStatus('success', res?.message || `${capitalizedGame} solved!`);
         }
         disableButtons(false);
         return;
