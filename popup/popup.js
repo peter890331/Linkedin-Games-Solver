@@ -172,7 +172,37 @@ document.getElementById('solve-all-btn').addEventListener('click', async () => {
 
   setStatus('success', 'All games solved!');
   disableButtons(false);
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && tab.id) {
+      chrome.tabs.update(tab.id, { url: 'https://www.linkedin.com/games/' });
+    }
+  } catch (e) {}
 });
+
+function updateCountdown() {
+  const now = new Date();
+  const ptString = now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" });
+  const ptDate = new Date(ptString);
+  
+  const ptMidnight = new Date(ptDate);
+  ptMidnight.setHours(24, 0, 0, 0);
+  
+  const diff = ptMidnight - ptDate;
+  
+  const h = Math.floor(diff / (1000 * 60 * 60));
+  const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const s = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  const el = document.getElementById('countdown');
+  if (el) {
+    el.textContent = `Next games in: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
 
 (async () => {
   try {

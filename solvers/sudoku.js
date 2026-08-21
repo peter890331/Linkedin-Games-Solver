@@ -18,14 +18,13 @@ void (async () => {
       if (cells.length === 0) cells = document.querySelectorAll('[data-cell-idx]');
       if (cells.length === SIZE * SIZE) return true;
       if (i >= 5 && cells.length === 0 && !document.querySelector('.sudoku-cell')) return false;
-      for (const btn of document.querySelectorAll('button')) {
-        const text = btn.textContent.trim().toLowerCase();
-        if (['play', 'start', 'play now', 'play again', 'continue', 'got it', 'ok', "let's go", '開始', '遊玩', '繼續'].includes(text)) click(btn);
-        if (btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === 'Dismiss' || btn.getAttribute('aria-label') === '關閉') click(btn);
-      }
+      
       for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
-        const close = d.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="關閉"], button');
-        if (close) click(close);
+        const primaryBtn = d.querySelector('button.artdeco-button--primary');
+        if (primaryBtn) click(primaryBtn);
+        
+        const closeBtn = d.querySelector('button.artdeco-modal__dismiss, button[data-test-modal-close-btn]');
+        if (closeBtn) click(closeBtn);
       }
       await sleep(100);
     }

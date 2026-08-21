@@ -70,8 +70,16 @@
       </button>
     </div>
 
-    <div class="actions">
-      <button id="solve-all-btn" class="game-card" style="grid-column: 1 / -1; width: calc(100% - 20px); margin: 0 10px 10px 10px; background-color: #ffffff; color: #dc2626; font-weight: 600;">🤓☝️ Solve All Games in one tap !</button>
+    <div class="actions" style="padding: 0 12px 8px;">
+      <button id="solve-all-btn" class="game-card">
+        <div class="game-icon">
+          <img src="../icons/all.png" alt="All">
+        </div>
+        <div class="game-info">
+          <span class="game-name" style="color: #dc2626;">Solve All Games in one tap !</span>
+        </div>
+        <div class="game-arrow">&#8250;</div>
+      </button>
     </div>
 
     <div id="status" class="status hidden">
@@ -80,7 +88,7 @@
     </div>
 
     <div class="footer">
-      <!-- <span>From <a href="https://github.com/ronnielgandhe/linkedin-games-solver" target="_blank" style="color: inherit; text-decoration: underline;">ronnielgandhe/linkedin-games-solver</a>.</span> -->
+      <span id="countdown">Next games in: --:--:--</span>
     </div>
 
   <script src="popup.js"></script>

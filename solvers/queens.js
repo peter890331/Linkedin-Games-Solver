@@ -11,20 +11,21 @@ void (async () => {
 
   async function waitForBoard() {
     for (let i = 0; i < 50; i++) {
-      const closeBtn = document.querySelector('[aria-label="Close"], [aria-label="關閉"]');
-      if (closeBtn) click(closeBtn);
-
       const section = document.querySelector('[aria-label="Press enter to gameboard"], [aria-label*="Enter"]') || document;
-      if (section) {
+      if (section && section !== document) {
         for (const div of section.querySelectorAll('div, section')) {
           const len = div.children.length;
           if (len >= 25 && len <= 144 && Number.isInteger(Math.sqrt(len))) return true;
         }
       }
-      if (i >= 5 && !section) return false;
-      for (const btn of document.querySelectorAll('button')) {
-        const text = btn.textContent.trim().toLowerCase();
-        if (text === 'play' || text === 'start' || text === '開始' || text === '遊玩') click(btn);
+      if (i >= 5 && (!section || section === document)) return false;
+      
+      for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+        const primaryBtn = d.querySelector('button.artdeco-button--primary');
+        if (primaryBtn) click(primaryBtn);
+        
+        const closeBtn = d.querySelector('button.artdeco-modal__dismiss, button[data-test-modal-close-btn]');
+        if (closeBtn) click(closeBtn);
       }
       await sleep(100);
     }
@@ -38,14 +39,9 @@ void (async () => {
     }
 
     await sleep(300);
-    for (const d of document.querySelectorAll('[role="dialog"]')) {
-      const close = d.querySelector('button');
-      if (close) click(close);
-    }
-    for (const btn of document.querySelectorAll('button')) {
-      if (btn.textContent.trim() === '\u00d7' || btn.getAttribute('aria-label') === 'Close' || btn.getAttribute('aria-label') === '關閉') {
-        click(btn);
-      }
+    for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+      const closeBtn = d.querySelector('button.artdeco-modal__dismiss, button[data-test-modal-close-btn]');
+      if (closeBtn) click(closeBtn);
     }
     await sleep(500);
 
@@ -65,8 +61,7 @@ void (async () => {
     const SIZE = Math.round(Math.sqrt(cellEls.length));
 
     const cells = cellEls.map((el, i) => {
-      const ariaLabel = el.getAttribute('aria-label') || '';
-      const hasQueen = /queen|皇后|王后|reine|reina|königin|regina|rainha|koningin|królowa|kraliçe|vezir|королева|ферзь|ratu|クイーン|퀸|ملكة|रानी|drottning|dronning|kuningatar|královna|regină/i.test(ariaLabel);
+      const hasQueen = !!el.querySelector('svg');
       
       let bgColor = window.getComputedStyle(el).backgroundColor;
       if (!bgColor || bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
