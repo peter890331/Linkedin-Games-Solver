@@ -109,6 +109,8 @@ async function solveGame(game) {
         if (cdpResult && cdpResult.error) {
           return { error: 'Error!' };
         }
+        setStatus('success', `${capitalizedGame} solved!`);
+        await new Promise(r => setTimeout(r, 2500));
       } catch (e) {
         return { error: 'Error!' };
       }
@@ -123,10 +125,14 @@ async function solveGame(game) {
         if (cdpResult && cdpResult.error) {
           return { error: 'Error!' };
         }
+        setStatus('success', `${capitalizedGame} solved!`);
+        await new Promise(r => setTimeout(r, 2500));
       } catch (e) {
         return { error: 'Error!' };
       }
     } else if (result && result.success) {
+      setStatus('success', result.message || `${capitalizedGame} solved!`);
+      await new Promise(r => setTimeout(r, 2500));
       return result;
     } else {
       return { error: 'Error!' };
