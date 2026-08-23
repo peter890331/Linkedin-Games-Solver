@@ -431,14 +431,17 @@ void (async () => {
       return result;
     }
 
-    function solve() {
+    async function solve() {
       const deadline = performance.now() + 10000;
       const path = [waypoints[0]];
       const visited = new Set([`${waypoints[0].row},${waypoints[0].col}`]);
       let nextWp = 1;
       let iterations = 0;
-      function bt() {
-        if (++iterations % 5000 === 0 && performance.now() > deadline) return false;
+      async function bt() {
+        if (++iterations % 1000 === 0) {
+          if (performance.now() > deadline) return false;
+          await sleep(0);
+        }
         if (path.length === totalActive) return nextWp >= waypoints.length;
         const curr = path[path.length - 1];
 
@@ -463,15 +466,15 @@ void (async () => {
           visited.add(key); path.push(next);
           const oldWp = nextWp;
           if (isWp) nextWp++;
-          if (bt()) return true;
+          if (await bt()) return true;
           nextWp = oldWp; path.pop(); visited.delete(key);
         }
         return false;
       }
-      return bt() ? path : null;
+      return (await bt()) ? path : null;
     }
 
-    const solution = solve();
+    const solution = await solve();
     if (!solution) {
       window.__linkedinSolverResult = { error: 'Error!' };
       return;
