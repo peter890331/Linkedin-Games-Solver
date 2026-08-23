@@ -141,7 +141,7 @@ async function solveGame(game) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id, allFrames: true },
         world: 'MAIN',
-        files: ['solvers/shared.js', `solvers/${game}.js`],
+        files: [`solvers/${game}.js`],
       });
     } catch (e) {
       return { error: 'Error!' };
