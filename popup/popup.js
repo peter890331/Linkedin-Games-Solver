@@ -20,8 +20,8 @@ if (debugBtn) {
     isDebug = !isDebug;
     debugBtn.textContent = `Debug: ${isDebug ? 'ON' : 'OFF'}`;
     
-    if (!isDebug && debugPanel) {
-      debugPanel.style.display = 'none';
+    if (!isDebug) {
+      if (debugPanel) debugPanel.style.display = 'none';
       const logEl = document.getElementById('debug-log');
       if (logEl) logEl.innerHTML = '';
     }

@@ -56,7 +56,7 @@ void (async () => {
 
     const emptyCount = grid.flat().filter(v => v === 0).length;
     if (emptyCount === 0) {
-      window.__linkedinSolverResult = { success: true, message: 'Mini Sudoku solved!' };
+      window.__linkedinSolverResult = { success: true, message: 'Sudoku solved!' };
       return;
     }
 
@@ -124,7 +124,7 @@ void (async () => {
       }
     }
 
-    window.__linkedinSolverResult = { success: true, message: 'Mini Sudoku solved!' };
+    window.__linkedinSolverResult = { success: true, message: 'Sudoku solved!' };
   } catch (err) {
     window.__linkedinSolverResult = { error: 'Error!' };
   }
