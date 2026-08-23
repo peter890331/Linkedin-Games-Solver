@@ -6,6 +6,41 @@ const GAME_URLS = {
   patches: 'https://www.linkedin.com/games/patches/',
 };
 
+let isDebug = false;
+let watchdogTimer = null;
+let isSolvingAborted = false;
+
+const debugPanel = document.getElementById('debug-panel');
+const debugBtn = document.getElementById('debug-btn');
+if (debugPanel) debugPanel.style.display = 'none';
+
+if (debugBtn) {
+  debugBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    isDebug = !isDebug;
+    debugBtn.textContent = `Debug: ${isDebug ? 'ON' : 'OFF'}`;
+    
+    if (!isDebug && debugPanel) {
+      debugPanel.style.display = 'none';
+      const logEl = document.getElementById('debug-log');
+      if (logEl) logEl.innerHTML = '';
+    }
+  });
+}
+
+function logDebug(msg, isError = false) {
+  const logEl = document.getElementById('debug-log');
+  if (logEl) {
+    const color = isError ? 'color: #dc2626; font-weight: 600;' : 'inherit';
+    logEl.innerHTML += `<div style="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    
+    if (isDebug && debugPanel) {
+      debugPanel.style.display = 'block';
+      debugPanel.scrollTop = debugPanel.scrollHeight;
+    }
+  }
+}
+
 function setStatus(type, text) {
   const el = document.getElementById('status');
   const icon = document.getElementById('status-icon');
@@ -13,10 +48,27 @@ function setStatus(type, text) {
   el.className = `status ${type}`;
   textEl.textContent = text;
   icon.textContent = type === 'solving' ? '\u23F3' : type === 'success' ? '\u2705' : '\u274C';
+  
+  logDebug(`Status updated - ${text}`, type === 'error');
+
+  if (watchdogTimer) clearTimeout(watchdogTimer);
+  if (type === 'solving') {
+    watchdogTimer = setTimeout(() => {
+      if (el.classList.contains('solving')) {
+        el.className = 'status error';
+        const errorMsg = `${text.replace('...', '')} failed`;
+        textEl.textContent = errorMsg;
+        icon.textContent = '\u274C';
+        logDebug(`Timeout error (20s) - ${errorMsg}`, true);
+        isSolvingAborted = true;
+        disableButtons(false);
+      }
+    }, 20000);
+  }
 }
 
 function disableButtons(disabled) {
-  document.querySelectorAll('button').forEach(btn => btn.disabled = disabled);
+  document.querySelectorAll('button:not(#debug-btn)').forEach(btn => btn.disabled = disabled);
 }
 
 async function waitForTabLoad(tabId) {
@@ -38,6 +90,7 @@ async function waitForTabLoad(tabId) {
 async function pollForResult(tabId, maxAttempts, intervalMs) {
   let lastError = null;
   for (let i = 0; i < maxAttempts; i++) {
+    if (isSolvingAborted) return { error: 'Aborted' };
     await new Promise(r => setTimeout(r, intervalMs));
     try {
       const checks = await chrome.scripting.executeScript({
@@ -88,7 +141,7 @@ async function solveGame(game) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id, allFrames: true },
         world: 'MAIN',
-        files: [`solvers/${game}.js`],
+        files: ['solvers/shared.js', `solvers/${game}.js`],
       });
     } catch (e) {
       return { error: 'Error!' };
@@ -147,24 +200,24 @@ async function solveGame(game) {
 document.querySelectorAll('.game-card').forEach(btn => {
   if (btn.id === 'solve-all-btn') return;
   btn.addEventListener('click', async () => {
+    isSolvingAborted = false;
     disableButtons(true);
     const game = btn.dataset.game;
-    const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
     const res = await solveGame(game);
     if (res && res.error) {
       setStatus('error', 'Error!');
-    } else {
-      setStatus('success', `${capitalizedGame} solved!`);
     }
     disableButtons(false);
   });
 });
 
 document.getElementById('solve-all-btn').addEventListener('click', async () => {
+  isSolvingAborted = false;
   disableButtons(true);
   const games = ['sudoku', 'tango', 'queens', 'zip', 'patches'];
   
   for (const game of games) {
+    if (isSolvingAborted) break;
     const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
     setStatus('solving', `Processing ${capitalizedGame}...`);
     const res = await solveGame(game);
@@ -217,13 +270,11 @@ setInterval(updateCountdown, 1000);
     for (const [game, url] of Object.entries(GAME_URLS)) {
       const slug = url.replace('https://www.linkedin.com', '');
       if (tab.url.includes(slug)) {
+        isSolvingAborted = false;
         disableButtons(true);
-        const capitalizedGame = game.charAt(0).toUpperCase() + game.slice(1);
         const res = await solveGame(game);
         if (res && res.error) {
           setStatus('error', 'Error!');
-        } else {
-          setStatus('success', res?.message || `${capitalizedGame} solved!`);
         }
         disableButtons(false);
         return;

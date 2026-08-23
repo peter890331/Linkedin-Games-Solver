@@ -2,13 +2,7 @@ void (async () => {
   const SUN = 0;
   const MOON = 1;
 
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  function click(el) {
-    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-  }
+  const { sleep, click } = window.solverUtils;
 
   async function waitForBoard() {
     for (let i = 0; i < 50; i++) {
