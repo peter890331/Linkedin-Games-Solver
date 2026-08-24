@@ -29,12 +29,14 @@ if (debugBtn) {
 }
 
 function logDebug(msg, isError = false) {
+  if (!isDebug) return;
+
   const logEl = document.getElementById('debug-log');
   if (logEl) {
     const color = isError ? 'color: #dc2626; font-weight: 600;' : 'inherit';
     logEl.innerHTML += `<div style="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
     
-    if (isDebug && debugPanel) {
+    if (debugPanel) {
       debugPanel.style.display = 'block';
       debugPanel.scrollTop = debugPanel.scrollHeight;
     }
