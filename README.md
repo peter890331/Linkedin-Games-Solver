@@ -14,3 +14,6 @@ https://github.com/ronnielgandhe/linkedin-games-solver
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/games/)
 
+---
+
+![video](https://github.com/peter890331/linkedin-games-solver/blob/main/video.gif)
