@@ -1,18 +1,23 @@
 void (async () => {
+  const scriptStartTime = performance.now();
   const SUN = 0;
   const MOON = 1;
 
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
 
   function click(el) {
     el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true }));
+    el.dispatchEvent(new MouseEvent('click',     { bubbles: true }));
   }
 
   async function waitForBoard() {
+    const boardSelectors = '[aria-label="Gameboard"], [aria-label*="Game"], [data-testid="tango-gameboard-wrapper"]';
+    
     for (let i = 0; i < 50; i++) {
-      const board = document.querySelector('[aria-label="Gameboard"], [aria-label*="Game"]') || document.querySelector('[data-testid="tango-gameboard-wrapper"]') || document;
+      const board = document.querySelector(boardSelectors) || document;
       if (board) {
         const cells = [...board.querySelectorAll('[data-testid^="cell-"]')]
           .filter(el => /^cell-\d+$/.test(el.getAttribute('data-testid')));
@@ -20,7 +25,8 @@ void (async () => {
       }
       if (i >= 5 && !board) return false;
       
-      for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+      const dialogs = document.querySelectorAll('[role="dialog"], [role="alertdialog"]');
+      for (const d of dialogs) {
         const primaryBtn = d.querySelector('button.artdeco-button--primary');
         if (primaryBtn) click(primaryBtn);
         
@@ -38,7 +44,8 @@ void (async () => {
       return;
     }
 
-    const board = document.querySelector('[aria-label="Gameboard"], [aria-label*="Game"]') || document.querySelector('[data-testid="tango-gameboard-wrapper"]') || document;
+    const boardSelectors = '[aria-label="Gameboard"], [aria-label*="Game"], [data-testid="tango-gameboard-wrapper"]';
+    const board = document.querySelector(boardSelectors) || document;
     if (!board) {
       window.__linkedinSolverResult = { error: 'Error!' };
       return;
@@ -86,7 +93,9 @@ void (async () => {
       return;
     }
 
-    function idx(r, c) { return r * SIZE + c; }
+    function idx(r, c) {
+      return (r * SIZE) + c;
+    }
 
     const constraints = [];
     const seen = new Set();
@@ -103,10 +112,11 @@ void (async () => {
 
         const cellRect = cellEl.getBoundingClientRect();
         const edgeRect = e.getBoundingClientRect();
-        const dx = (edgeRect.left + edgeRect.width / 2) - (cellRect.left + cellRect.width / 2);
-        const dy = (edgeRect.top + edgeRect.height / 2) - (cellRect.top + cellRect.height / 2);
+        const dx = (edgeRect.left + (edgeRect.width / 2)) - (cellRect.left + (cellRect.width / 2));
+        const dy = (edgeRect.top + (edgeRect.height / 2)) - (cellRect.top + (cellRect.height / 2));
 
-        let r2 = cellRow, c2 = cellCol;
+        let r2 = cellRow;
+        let c2 = cellCol;
         if (Math.abs(dx) > Math.abs(dy)) {
           c2 += dx > 0 ? 1 : -1;
         } else {
@@ -114,20 +124,22 @@ void (async () => {
         }
 
         if (r2 >= 0 && r2 < SIZE && c2 >= 0 && c2 < SIZE) {
-          const key = `${Math.min(idx(cellRow, cellCol), idx(r2, c2))}-${Math.max(idx(cellRow, cellCol), idx(r2, c2))}`;
+          const idx1 = idx(cellRow, cellCol);
+          const idx2 = idx(r2, c2);
+          const key = `${Math.min(idx1, idx2)}-${Math.max(idx1, idx2)}`;
           if (!seen.has(key)) {
             seen.add(key);
-            constraints.push({ type, i1: idx(cellRow, cellCol), i2: idx(r2, c2) });
+            constraints.push({ type: type, i1: idx1, i2: idx2 });
           }
         }
       } else {
         const edgeRect = e.getBoundingClientRect();
-        const ecx = edgeRect.left + edgeRect.width / 2;
-        const ecy = edgeRect.top + edgeRect.height / 2;
+        const ecx = edgeRect.left + (edgeRect.width / 2);
+        const ecy = edgeRect.top + (edgeRect.height / 2);
 
         const dists = cellEls.map((c, i) => {
           const r = c.getBoundingClientRect();
-          return { i, dist: Math.hypot(r.left + r.width / 2 - ecx, r.top + r.height / 2 - ecy) };
+          return { i: i, dist: Math.hypot(r.left + (r.width / 2) - ecx, r.top + (r.height / 2) - ecy) };
         }).sort((a, b) => a.dist - b.dist);
 
         const i1 = dists[0].i;
@@ -135,7 +147,7 @@ void (async () => {
         const key = `${Math.min(i1, i2)}-${Math.max(i1, i2)}`;
         if (!seen.has(key)) {
           seen.add(key);
-          constraints.push({ type, i1, i2 });
+          constraints.push({ type: type, i1: i1, i2: i2 });
         }
       }
     }
@@ -144,7 +156,8 @@ void (async () => {
 
     function isValidPartial(g) {
       for (let r = 0; r < SIZE; r++) {
-        let sunCount = 0, moonCount = 0;
+        let sunCount = 0;
+        let moonCount = 0;
         for (let c = 0; c < SIZE; c++) {
           const v = g[idx(r, c)];
           if (v === SUN) sunCount++;
@@ -153,13 +166,16 @@ void (async () => {
         if (sunCount > half || moonCount > half) return false;
 
         for (let c = 0; c <= SIZE - 3; c++) {
-          const a = g[idx(r, c)], b = g[idx(r, c + 1)], cc = g[idx(r, c + 2)];
+          const a = g[idx(r, c)];
+          const b = g[idx(r, c + 1)];
+          const cc = g[idx(r, c + 2)];
           if (a !== -1 && a === b && b === cc) return false;
         }
       }
 
       for (let c = 0; c < SIZE; c++) {
-        let sunCount = 0, moonCount = 0;
+        let sunCount = 0;
+        let moonCount = 0;
         for (let r = 0; r < SIZE; r++) {
           const v = g[idx(r, c)];
           if (v === SUN) sunCount++;
@@ -168,13 +184,16 @@ void (async () => {
         if (sunCount > half || moonCount > half) return false;
 
         for (let r = 0; r <= SIZE - 3; r++) {
-          const a = g[idx(r, c)], b = g[idx(r + 1, c)], d = g[idx(r + 2, c)];
+          const a = g[idx(r, c)];
+          const b = g[idx(r + 1, c)];
+          const d = g[idx(r + 2, c)];
           if (a !== -1 && a === b && b === d) return false;
         }
       }
 
       for (const { type, i1, i2 } of constraints) {
-        const v1 = g[i1], v2 = g[i2];
+        const v1 = g[i1];
+        const v2 = g[i2];
         if (v1 === -1 || v2 === -1) continue;
         if (type === 'same' && v1 !== v2) return false;
         if (type === 'diff' && v1 === v2) return false;
@@ -208,11 +227,20 @@ void (async () => {
 
     window.__linkedinSolverResult = { success: true, message: 'Tango solved!' };
 
-    for (const i of toFill) {
+    for (let fillIdx = 0; fillIdx < toFill.length; fillIdx++) {
+      const i = toFill[fillIdx];
       const target = solution[i];
       const clicks = target === SUN ? 1 : 2;
       const clickTarget = cellEls[i].querySelector('div') || cellEls[i];
+      
       for (let c = 0; c < clicks; c++) {
+        if (fillIdx === toFill.length - 1 && c === clicks - 1) {
+          const elapsed = performance.now() - scriptStartTime;
+          if (elapsed < 2000) {
+            await sleep(2000 - elapsed);
+          }
+        }
+        
         click(clickTarget);
         await sleep(30);
       }

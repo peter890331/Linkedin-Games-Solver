@@ -1,17 +1,23 @@
 void (async () => {
+  const scriptStartTime = performance.now();
   const DELAY = 30;
 
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
 
   function click(el) {
     el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true }));
+    el.dispatchEvent(new MouseEvent('click',     { bubbles: true }));
   }
 
   async function waitForBoard() {
+    const boardSelectors = '[aria-label="Press enter to gameboard"], [aria-label*="Enter"]';
+    
     for (let i = 0; i < 50; i++) {
-      const section = document.querySelector('[aria-label="Press enter to gameboard"], [aria-label*="Enter"]') || document;
+      const section = document.querySelector(boardSelectors) || document;
+      
       if (section && section !== document) {
         for (const div of section.querySelectorAll('div, section')) {
           const len = div.children.length;
@@ -20,7 +26,8 @@ void (async () => {
       }
       if (i >= 5 && (!section || section === document)) return false;
       
-      for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+      const dialogs = document.querySelectorAll('[role="dialog"], [role="alertdialog"]');
+      for (const d of dialogs) {
         const primaryBtn = d.querySelector('button.artdeco-button--primary');
         if (primaryBtn) click(primaryBtn);
         
@@ -39,17 +46,23 @@ void (async () => {
     }
 
     await sleep(300);
-    for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+    const dialogs = document.querySelectorAll('[role="dialog"], [role="alertdialog"]');
+    for (const d of dialogs) {
       const closeBtn = d.querySelector('button.artdeco-modal__dismiss, button[data-test-modal-close-btn]');
       if (closeBtn) click(closeBtn);
     }
     await sleep(500);
 
-    const section = document.querySelector('[aria-label="Press enter to gameboard"], [aria-label*="Enter"]') || document;
+    const boardSelectors = '[aria-label="Press enter to gameboard"], [aria-label*="Enter"]';
+    const section = document.querySelector(boardSelectors) || document;
     let gridContainer = null;
+    
     for (const div of section.querySelectorAll('div, section')) {
       const len = div.children.length;
-      if (len >= 25 && len <= 144 && Number.isInteger(Math.sqrt(len))) { gridContainer = div; break; }
+      if (len >= 25 && len <= 144 && Number.isInteger(Math.sqrt(len))) {
+        gridContainer = div;
+        break;
+      }
     }
 
     if (!gridContainer) {
@@ -62,8 +75,8 @@ void (async () => {
 
     const cells = cellEls.map((el, i) => {
       const hasQueen = !!el.querySelector('svg');
-      
       let bgColor = window.getComputedStyle(el).backgroundColor;
+      
       if (!bgColor || bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
         const child = el.firstElementChild;
         if (child) bgColor = window.getComputedStyle(child).backgroundColor;
@@ -73,8 +86,8 @@ void (async () => {
         row: Math.floor(i / SIZE),
         col: i % SIZE,
         color: bgColor || 'unknown',
-        hasQueen,
-        el,
+        hasQueen: hasQueen,
+        el: el,
       };
     });
 
@@ -87,11 +100,12 @@ void (async () => {
     const colors = [...new Set(cells.map(c => c.color))];
     const colorToId = {};
     colors.forEach((c, i) => colorToId[c] = i);
+    
     const regionGrid = [];
     for (let r = 0; r < SIZE; r++) {
       regionGrid.push([]);
       for (let c = 0; c < SIZE; c++) {
-        regionGrid[r].push(colorToId[cells[r * SIZE + c].color]);
+        regionGrid[r].push(colorToId[cells[(r * SIZE) + c].color]);
       }
     }
 
@@ -136,15 +150,24 @@ void (async () => {
     const toPlace = [];
     for (let row = 0; row < SIZE; row++) {
       const col = solution[row];
-      const cell = cells[row * SIZE + col];
+      const cell = cells[(row * SIZE) + col];
       if (!cell.hasQueen) toPlace.push(cell);
     }
 
     window.__linkedinSolverResult = { success: true, message: 'Queens solved!' };
 
-    for (const cell of toPlace) {
+    for (let i = 0; i < toPlace.length; i++) {
+      const cell = toPlace[i];
       click(cell.el);
       await sleep(DELAY);
+      
+      if (i === toPlace.length - 1) {
+        const elapsed = performance.now() - scriptStartTime;
+        if (elapsed < 2000) {
+          await sleep(2000 - elapsed);
+        }
+      }
+      
       click(cell.el);
       await sleep(DELAY);
     }
