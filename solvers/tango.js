@@ -7,6 +7,18 @@ void (async () => {
     return new Promise(r => setTimeout(r, ms));
   }
 
+  function getWebElapsed() {
+    const elements = document.querySelectorAll('span, div, p');
+    for (const el of elements) {
+      const text = el.textContent.trim();
+      const match = text.match(/^(\d+):(\d{2})$/);
+      if (match) {
+        return (parseInt(match[1]) * 60 + parseInt(match[2])) * 1000;
+      }
+    }
+    return null;
+  }
+
   function click(el) {
     el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
     el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true }));
@@ -235,9 +247,16 @@ void (async () => {
       
       for (let c = 0; c < clicks; c++) {
         if (fillIdx === toFill.length - 1 && c === clicks - 1) {
-          const elapsed = performance.now() - scriptStartTime;
-          if (elapsed < 2000) {
-            await sleep(2000 - elapsed);
+          const webElapsed = getWebElapsed();
+          if (webElapsed !== null) {
+            if (webElapsed < 2000) {
+              await sleep(2000 - webElapsed);
+            }
+          } else {
+            const elapsed = performance.now() - scriptStartTime;
+            if (elapsed < 2000) {
+              await sleep(2000 - elapsed);
+            }
           }
         }
         
