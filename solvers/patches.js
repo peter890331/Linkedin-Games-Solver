@@ -1,6 +1,20 @@
 void (async () => {
+  const scriptStartTime = performance.now();
+
   function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
+  }
+
+  function getWebElapsed() {
+    const elements = document.querySelectorAll('span, div, p');
+    for (const el of elements) {
+      const text = el.textContent.trim();
+      const match = text.match(/^(\d+):(\d{2})$/);
+      if (match) {
+        return (parseInt(match[1]) * 60 + parseInt(match[2])) * 1000;
+      }
+    }
+    return null;
   }
 
   function click(el) {
@@ -105,6 +119,19 @@ void (async () => {
         from: [fromX, fromY],
         to: [toX, toY],
       });
+    }
+
+    const TARGET_MS = 1000;
+    const webElapsed = getWebElapsed();
+    if (webElapsed !== null) {
+      if (webElapsed < TARGET_MS) {
+        await sleep(TARGET_MS - webElapsed);
+      }
+    } else {
+      const elapsed = performance.now() - scriptStartTime;
+      if (elapsed < TARGET_MS) {
+        await sleep(TARGET_MS - elapsed);
+      }
     }
 
     window.__linkedinSolverResult = {
