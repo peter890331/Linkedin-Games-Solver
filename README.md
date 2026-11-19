@@ -1,27 +1,53 @@
 # LinkedIn Games Solver
 
-A cool extension from ronnielgandhe.    
-https://github.com/ronnielgandhe/linkedin-games-solver
-
----
-一個自動解 LinkedIn Games 的擴充功能，我覺得很酷。
-
-原作者的程式碼在某兩個遊戲讀取不到網頁內容，我針對其修改了一下。    
-並調整了擴充功能的顯示排版，新增一鍵全解功能、明日遊戲倒數和兩秒檢測以防止儲存錯誤。
-
-Sumbreak 上線後，我已在 2.0 版本中加入對它的破解。    
-未來如果發現其他新遊戲，也會陸續跟進破解。
-
-<a href="https://github.com/peter890331/Linkedin-Games-Solver"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=22&pause=1000&color=36BCF7&center=false&vCenter=false&width=500&lines=不知道有沒有違反服務條款，建議不要常用？" alt="Typing SVG" /></a>
-
-首先在瀏覽器登入 LinkedIn。    
-下載 zip 檔後對其解壓縮，    
-在瀏覽器擴充功能頁面啟用開發人員模式，點選載入未封裝項目，選擇解壓縮後的資料夾即可使用。
-
----
-
 [![LinkedIn Games](https://img.shields.io/badge/LinkedIn-Games-gray?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=0077B5)](https://www.linkedin.com/games/)
 
+A Chrome extension that automatically solves LinkedIn's daily games in one click.
+
+> Forked and enhanced from [ronnielgandhe/linkedin-games-solver](https://github.com/ronnielgandhe/linkedin-games-solver).
+
+<p align="center">
+  <img src="https://github.com/peter890331/linkedin-games-solver/blob/main/video.gif" alt="Demo" />
+</p>
+
+## ✨ What's New & Improved
+
+- Fixed board detection issues in certain games
+- Added **Sumbreak** support in v2.0
+- Added **Solve All** one-tap mode
+- Added 2-second timing check to prevent score-saving errors
+- Redesigned popup UI with a daily reset countdown and debug panel
+
+## 🎮 Supported Games
+
+- ✅ Mini Sudoku
+- ✅ Tango
+- ✅ Queens
+- ✅ Zip
+- ✅ Patches
+- ✅ Sumbreak
+
+## 🚀 Installation
+
+1. Log in to [LinkedIn](https://www.linkedin.com/games/) in your Chromium-based browser (Chrome, Edge, Brave, etc.).
+2. Download this repository as a `.zip` file (click **Code** → **Download ZIP**) and extract it.
+3. Open your browser's extensions page (`chrome://extensions/`).
+4. Enable **Developer mode** in the top-right corner.
+5. Click **Load unpacked** and select the extracted folder.
+6. Click the extension icon in your toolbar and pick a game, or hit **Solve All Games in one tap!**
+
+## ⚠️ Disclaimer
+
+<a href="https://github.com/peter890331/linkedin-games-solver"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=20&pause=1000&color=36BCF7¢er=false&vCenter=false&width=800&lines=Not+sure+if+this+violates+LinkedIn+ToS,+use+at+your+own+risk!" alt="Typing SVG" /></a>
+
+This project is intended for educational and personal experimentation purposes only.     
+Automating interactions on LinkedIn may violate their Terms of Service.     
+Use responsibly and at your own discretion.
+
+## 🙏 Credits
+
+Original concept and base extension by [@ronnielgandhe](https://github.com/ronnielgandhe/linkedin-games-solver).
+
 ---
 
-![video](https://github.com/peter890331/linkedin-games-solver/blob/main/video.gif)
+⭐ If you find this extension helpful, please consider giving this repository a star!
