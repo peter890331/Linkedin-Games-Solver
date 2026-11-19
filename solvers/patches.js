@@ -62,6 +62,11 @@ void (async () => {
       return;
     }
 
+    if (document.querySelector('a[href*="/results"]')) {
+      window.__linkedinSolverResult = { success: true, message: 'Patches solved!' };
+      return;
+    }
+
     const cellEls = [...document.querySelectorAll('[data-cell-idx]')]
       .sort((a, b) => parseInt(a.dataset.cellIdx) - parseInt(b.dataset.cellIdx));
 
