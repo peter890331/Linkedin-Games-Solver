@@ -4,6 +4,7 @@ const GAME_URLS = {
   queens: 'https://www.linkedin.com/games/queens/',
   zip: 'https://www.linkedin.com/games/zip/',
   patches: 'https://www.linkedin.com/games/patches/',
+  sumbreak: 'https://www.linkedin.com/games/sumbreak/',
 };
 
 let isDebug = false;
@@ -216,7 +217,7 @@ document.querySelectorAll('.game-card').forEach(btn => {
 document.getElementById('solve-all-btn').addEventListener('click', async () => {
   isSolvingAborted = false;
   disableButtons(true);
-  const games = ['sudoku', 'tango', 'queens', 'zip', 'patches'];
+  const games = ['sudoku', 'tango', 'queens', 'zip', 'patches', 'sumbreak'];
   
   for (const game of games) {
     if (isSolvingAborted) break;

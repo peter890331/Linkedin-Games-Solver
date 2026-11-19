@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "LinkedIn Games Solver",
-  "version": "1.0",
-  "description": "Instantly solve LinkedIn games — Mini Sudoku, Tango, Queens, Zip & Patches !",
+  "version": "2.0",
+  "description": "Instantly solve LinkedIn games — Mini Sudoku, Tango, Queens, Zip, Patches & Sumbreak !",
   "permissions": ["activeTab", "scripting", "debugger"],
   "host_permissions": ["https://www.linkedin.com/*"],
   "background": {

@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .catch(err => sendResponse({ error: 'Error!' }));
     return true;
   }
-  if (msg.type === 'PATCHES_SOLVE') {
+  if (msg.type === 'PATCHES_SOLVE' || msg.type === 'SUMBREAK_SOLVE') {
     handlePatchesDrags(msg.tabId, msg.drags)
       .then(result => sendResponse(result))
       .catch(err => sendResponse({ error: 'Error!' }));
