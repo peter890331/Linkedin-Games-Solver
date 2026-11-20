@@ -55,6 +55,7 @@ async function resolveCellCoords(tabId, cellIndices) {
 }
 
 async function handleZipDrag(tabId, cellIndices) {
+  const startTime = Date.now();
   const target = { tabId };
 
   try {
@@ -81,6 +82,35 @@ async function handleZipDrag(tabId, cellIndices) {
     await sleep(30);
 
     for (let i = 1; i < coords.length; i++) {
+      if (i === coords.length - 1) {
+        let webElapsed = null;
+        try {
+          const res = await chrome.scripting.executeScript({
+            target: { tabId, allFrames: true },
+            world: 'MAIN',
+            func: () => {
+              const elements = document.querySelectorAll('span, div, p');
+              for (const el of elements) {
+                const match = el.textContent.trim().match(/^(\d+):(\d{2})$/);
+                if (match) return (parseInt(match[1]) * 60 + parseInt(match[2])) * 1000;
+              }
+              return null;
+            },
+          });
+          for (const r of res) {
+            if (r?.result !== null && r?.result !== undefined) {
+              webElapsed = r.result;
+              break;
+            }
+          }
+        } catch (_) {}
+
+        const elapsed = webElapsed !== null ? webElapsed : (Date.now() - startTime);
+        if (elapsed < 2000) {
+          await sleep(2000 - elapsed);
+        }
+      }
+
       const [x, y] = coords[i];
       await chrome.debugger.sendCommand(target, 'Input.dispatchMouseEvent', {
         type: 'mouseMoved', x, y, button: 'left', buttons: 1,
@@ -100,6 +130,7 @@ async function handleZipDrag(tabId, cellIndices) {
 }
 
 async function handlePatchesDrags(tabId, drags) {
+  const startTime = Date.now();
   const target = { tabId };
 
   try {
@@ -109,7 +140,37 @@ async function handlePatchesDrags(tabId, drags) {
   }
 
   try {
-    for (const { from, to } of drags) {
+    for (let i = 0; i < drags.length; i++) {
+      if (i === drags.length - 1) {
+        let webElapsed = null;
+        try {
+          const res = await chrome.scripting.executeScript({
+            target: { tabId, allFrames: true },
+            world: 'MAIN',
+            func: () => {
+              const elements = document.querySelectorAll('span, div, p');
+              for (const el of elements) {
+                const match = el.textContent.trim().match(/^(\d+):(\d{2})$/);
+                if (match) return (parseInt(match[1]) * 60 + parseInt(match[2])) * 1000;
+              }
+              return null;
+            },
+          });
+          for (const r of res) {
+            if (r?.result !== null && r?.result !== undefined) {
+              webElapsed = r.result;
+              break;
+            }
+          }
+        } catch (_) {}
+
+        const elapsed = webElapsed !== null ? webElapsed : (Date.now() - startTime);
+        if (elapsed < 2000) {
+          await sleep(2000 - elapsed);
+        }
+      }
+
+      const { from, to } = drags[i];
       const [x1, y1] = from;
       const [x2, y2] = to;
 

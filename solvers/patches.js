@@ -126,19 +126,6 @@ void (async () => {
       });
     }
 
-    const TARGET_MS = 1000;
-    const webElapsed = getWebElapsed();
-    if (webElapsed !== null) {
-      if (webElapsed < TARGET_MS) {
-        await sleep(TARGET_MS - webElapsed);
-      }
-    } else {
-      const elapsed = performance.now() - scriptStartTime;
-      if (elapsed < TARGET_MS) {
-        await sleep(TARGET_MS - elapsed);
-      }
-    }
-
     window.__linkedinSolverResult = {
       success: true,
       needsCDP: true,
