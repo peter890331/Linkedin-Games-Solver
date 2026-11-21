@@ -75,15 +75,32 @@ void (async () => {
 
     const grid = new Array(TOTAL).fill(0);
     for (let i = 0; i < TOTAL; i++) {
+      const btn = cellEls[i].querySelector('button[data-numo-kind]');
+      const kind = btn ? btn.getAttribute('data-numo-kind') : null;
+
+      if (kind === 'wildcard') {
+        grid[i] = -1;
+        continue;
+      }
+
       const svgCell = document.querySelector(`[data-numo-svg-cell="${i}"]`);
       const labelEl = svgCell ? svgCell.querySelector('text[data-numo-label="true"]') : null;
       if (labelEl) {
         const val = parseInt(labelEl.textContent.trim());
-        if (!isNaN(val) && val > 0) grid[i] = val;
+        if (!isNaN(val) && val > 0) {
+          grid[i] = val;
+          continue;
+        }
+      }
+
+      if (kind === 'number') {
+        const label = btn.getAttribute('aria-label') || '';
+        const match = label.match(/\d+/);
+        if (match) grid[i] = parseInt(match[0]);
       }
     }
 
-    const tileCount = grid.filter(v => v > 0).length;
+    const tileCount = grid.filter(v => v !== 0).length;
     if (tileCount <= 1) {
       window.__linkedinSolverResult = { success: true, message: 'Sumbreak solved!' };
       return;
@@ -103,6 +120,7 @@ void (async () => {
 
       for (let i = 0; i < TOTAL; i++) {
         const v = state[i];
+        if (v === -1) return false;
         if (v === 0) continue;
         if (v < minVal) {
           minVal = v;
@@ -143,17 +161,29 @@ void (async () => {
             if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
 
             const j = (nr * COLS) + nc;
-            if (state[j] !== val) continue;
+            const target = state[j];
+            if (target === 0) continue;
+
+            let newVal = 0;
+            if (val > 0 && target === val) {
+              newVal = val * 2;
+            } else if (val === -1 && target > 0) {
+              newVal = target * 2;
+            } else if (val > 0 && target === -1) {
+              newVal = val * 2;
+            } else {
+              continue;
+            }
 
             state[i] = 0;
-            state[j] = val * 2;
+            state[j] = newVal;
             moves.push([i, j]);
 
             if (bt(state, remaining - 1)) return true;
 
             moves.pop();
             state[i] = val;
-            state[j] = val;
+            state[j] = target;
           }
         }
 
