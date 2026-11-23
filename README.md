@@ -13,10 +13,10 @@ A Chrome extension that automatically solves LinkedIn's daily games in one click
 ## ✨ What's New & Improved
 
 - Fixed board detection issues in certain games
-- Added **Sumbreak** support in v2.0
 - Added **Solve All** one-tap mode
 - Added 2-second timing check to prevent score-saving errors
 - Redesigned popup UI with a daily reset countdown and debug panel
+- Added **Sumbreak** support in v2.0
 
 ## 🎮 Supported Games
 
