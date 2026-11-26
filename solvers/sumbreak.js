@@ -79,7 +79,12 @@ void (async () => {
       const kind = btn ? btn.getAttribute('data-numo-kind') : null;
 
       if (kind === 'wildcard') {
-        grid[i] = -1;
+        const svgCell = document.querySelector(`[data-numo-svg-cell="${i}"]`);
+        const labelEl = svgCell ? svgCell.querySelector('text[data-numo-label="true"]') : null;
+        const text = labelEl ? labelEl.textContent.trim() : (btn.getAttribute('aria-label') || '');
+        const match = text.match(/\d+/);
+        const mult = match ? parseInt(match[0]) : 2;
+        grid[i] = -mult;
         continue;
       }
 
@@ -120,7 +125,7 @@ void (async () => {
 
       for (let i = 0; i < TOTAL; i++) {
         const v = state[i];
-        if (v === -1) return false;
+        if (v < 0) return false;
         if (v === 0) continue;
         if (v < minVal) {
           minVal = v;
@@ -167,10 +172,10 @@ void (async () => {
             let newVal = 0;
             if (val > 0 && target === val) {
               newVal = val * 2;
-            } else if (val === -1 && target > 0) {
-              newVal = target * 2;
-            } else if (val > 0 && target === -1) {
-              newVal = val * 2;
+            } else if (val < 0 && target > 0) {
+              newVal = target * (-val);
+            } else if (val > 0 && target < 0) {
+              newVal = val * (-target);
             } else {
               continue;
             }
