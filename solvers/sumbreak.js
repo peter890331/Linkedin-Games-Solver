@@ -204,27 +204,40 @@ void (async () => {
       return;
     }
 
-    const drags = [];
-    for (const [fromIdx, toIdx] of solution) {
-      const r1 = cellEls[fromIdx].getBoundingClientRect();
-      const r2 = cellEls[toIdx].getBoundingClientRect();
+    for (let step = 0; step < solution.length; step++) {
+      if (step === solution.length - 1) {
+        const webElapsed = getWebElapsed();
+        const elapsed = webElapsed !== null ? webElapsed : (performance.now() - scriptStartTime);
+        if (elapsed < 2000) {
+          await sleep(2000 - elapsed);
+        }
+      }
 
-      const fromX = Math.round(r1.left + r1.width / 2);
-      const fromY = Math.round(r1.top + r1.height / 2);
-      const toX = Math.round(r2.left + r2.width / 2);
-      const toY = Math.round(r2.top + r2.height / 2);
+      const [fromIdx, toIdx] = solution[step];
+      const btnFrom = cellEls[fromIdx].querySelector('button[data-numo-kind]');
+      const btnTo = cellEls[toIdx].querySelector('button[data-numo-kind]');
 
-      drags.push({
-        from: [fromX, fromY],
-        to: [toX, toY],
-      });
+      if (!btnFrom || !btnTo) {
+        window.__linkedinSolverResult = { error: 'Error!' };
+        return;
+      }
+
+      btnFrom.click();
+      await sleep(20);
+      if (btnFrom.getAttribute('aria-pressed') !== 'true') {
+        btnFrom.click();
+        await sleep(20);
+      }
+      btnTo.click();
+
+      for (let w = 0; w < 15; w++) {
+        if (!cellEls[fromIdx].querySelector('button[data-numo-kind]')) break;
+        await sleep(20);
+      }
     }
 
     window.__linkedinSolverResult = {
       success: true,
-      needsCDP: true,
-      cdpType: 'drag',
-      drags: drags,
       message: 'Sumbreak solved!',
     };
   } catch (err) {
